@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AEE 产品添加工具</title>
+<style>
+body{margin:0;background:#f7f3ea;color:#21322d;font-family:-apple-system,Arial,"PingFang SC",sans-serif;line-height:1.5}
+.w{max-width:720px;margin:auto;padding:22px 18px 80px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:0 0 10px}
+.sub{color:#6d7772;font-size:14px;margin:0 0 20px}
+.box{background:#fffdf8;border:1px solid #ddd8ce;border-radius:18px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 4px}
+input[type=text]{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #ddd8ce;border-radius:10px;font:inherit;background:#fff}
+input[type=file]{width:100%;font:inherit}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:12px 20px;background:#254b3d;color:#fff;cursor:pointer}
+button.s{background:#fff;color:#254b3d;border:1px solid #254b3d;padding:6px 12px;font-size:13px}
+button.d{color:#b3402b;border-color:#b3402b}
+button:disabled{opacity:.4}
+.row{padding:10px 0;border-top:1px solid #eee}
+.row:first-child{border-top:0}
+.row-top{display:flex;align-items:center;gap:10px}
+.row img{width:54px;height:54px;object-fit:contain;background:#fff;border:1px solid #eee;border-radius:8px}
+.row .n{flex:1;font-size:14px;font-weight:700;min-width:0}.row .n small{display:block;font-weight:400;color:#6d7772}
+.row .btns{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.edit{margin-top:12px;padding-top:12px;border-top:1px dashed #ddd8ce;display:none}
+.edit.open{display:block}
+#prev,.eprev{max-width:150px;max-height:150px;display:none;margin-top:10px;border:1px solid #eee;border-radius:10px;background:#fff}
+.ok{color:#254b3d;font-weight:700}.warn{color:#b3402b;font-size:14px}
+.pill{display:inline-block;font-size:12px;color:#254b3d;background:#eaf1ec;border-radius:999px;padding:3px 10px;margin-left:6px}
+</style></head><body><div class="w">
+<h1>产品添加工具</h1>
+<p class="sub">自己往产品页顶部的滑动展示里加、改、删产品。全部在你的浏览器里完成，图片不会上传到任何地方。</p>
+
+<div class="box"><h2>① 载入网页文件</h2>
+<p style="margin:0 0 10px"><button id="loadSite">从网站载入</button></p>
+<p style="margin:0 0 10px"><button id="loadGh" class="s" style="display:none">从 GitHub 载入最新版</button></p>
+<details><summary style="font-size:14px;cursor:pointer">手动选择文件</summary>
+<label>英文页 products.html</label><input type="file" id="fEn" accept=".html,text/html">
+<label>中文页 products-zh.html（可选）</label><input type="file" id="fZh" accept=".html,text/html"></details>
+<p id="st1" class="warn"></p></div>
+
+<div class="box"><h2>GitHub 设置（一次即可，用于直接提交）</h2>
+<details id="ghset"><summary style="font-size:14px;cursor:pointer">展开设置</summary>
+<label>GitHub 用户名</label><input type="text" id="gOwner" autocapitalize="off" autocorrect="off">
+<label>仓库名</label><input type="text" id="gRepo" autocapitalize="off" autocorrect="off">
+<label>分支</label><input type="text" id="gBranch" value="main" autocapitalize="off">
+<label>网页文件所在文件夹（在仓库根目录就留空）</label><input type="text" id="gDir" autocapitalize="off" placeholder="例如 docs">
+<label>Token（仅保存在这台设备的浏览器里）</label><input type="text" id="gTok" autocapitalize="off" autocorrect="off" placeholder="github_pat_...">
+<p><button id="gSave" class="s">保存设置</button> <span id="gSt" class="ok"></span></p></details></div>
+
+<div class="box" id="brandBox" style="display:none"><h2>② 页头公司名</h2>
+<p id="brandSt" style="font-size:14px;margin:0 0 10px"></p>
+<p><button id="brandBtn" class="s">在页头加入 San You Food (M) Sdn Bhd</button></p></div>
+
+<div class="box" id="listBox" style="display:none"><h2>③ 当前产品（可编辑 / 上移 / 下移 / 删除）</h2><div id="list"></div></div>
+
+<div class="box" id="addBox" style="display:none"><h2>④ 添加新产品</h2>
+<label>产品图片</label><input type="file" id="img" accept="image/*"><img id="prev" alt="">
+<label>英文名称</label><input type="text" id="nEn" placeholder="例如 Lemon Sandwich Biscuits">
+<label>英文说明</label><input type="text" id="dEn" placeholder="例如 Lemon flavour · 168g">
+<label>中文名称</label><input type="text" id="nZh" placeholder="例如 柠檬味夹心饼干">
+<label>中文说明</label><input type="text" id="dZh" placeholder="例如 柠檬味 · 168g">
+<p><button id="add">添加到最后</button></p><p id="st3"></p></div>
+
+<div class="box" id="saveBox" style="display:none"><h2>⑤ 保存</h2>
+<p style="font-size:14px;margin:0 0 12px">改好后，可以直接提交到 GitHub，或保存成文件自己上传。</p>
+<p><button id="ghBtn" style="display:none">直接提交到 GitHub</button></p>
+<p id="st4"></p>
+<details><summary style="font-size:14px;cursor:pointer">保存成文件</summary>
+<p><button id="dEnBtn" class="s">保存 products.html</button></p>
+<p><button id="dZhBtn" class="s">保存 products-zh.html</button></p></details></div>
+</div>
+<script>
+var LEGAL_NAME='San You Food (M) Sdn Bhd';
+var BRAND_CSS="\n.brand-name{font-family:Georgia,serif;font-weight:600;letter-spacing:-.01em;color:var(--ink);font-size:20px;white-space:nowrap}\n@media(max-width:900px){.brand-name{font-size:15px;white-space:normal;line-height:1.15}}\n@media(max-width:600px){.brand-name{font-size:13px}}\n";
+var docs={en:null,zh:null},names={en:'products.html',zh:'products-zh.html'};
+function $(i){return document.getElementById(i)}
+function items(k){return docs[k]?[].slice.call(docs[k].querySelectorAll('.pcar-scroller .pcar-item')):[]}
+
+// ---------- image resize helper (shared by add + edit) ----------
+function readImageFile(file){
+  return new Promise(function(resolve){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){
+      var m=760,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');
+      c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);resolve(c.toDataURL('image/jpeg',.82));
+    };
+    im.src=u;
+  });
+}
+
+// ---------- brand-name (header company name) ----------
+function hasBrand(k){return docs[k]&&!!docs[k].querySelector('.brand-name')}
+function addBrand(k){
+  var d=docs[k];if(!d)return;
+  var st=d.querySelector('style');
+  if(st&&st.textContent.indexOf('.brand-name{')===-1)st.textContent+=BRAND_CSS;
+  var logo=d.querySelector('a.brand img');
+  if(logo&&!d.querySelector('.brand-name')){
+    var span=d.createElement('span');span.className='brand-name';span.textContent=LEGAL_NAME;
+    logo.parentNode.insertBefore(span,logo.nextSibling);
+  }
+}
+function refreshBrand(){
+  if(!docs.en){$('brandBox').style.display='none';return}
+  $('brandBox').style.display='block';
+  var enOk=hasBrand('en'),zhOk=!docs.zh||hasBrand('zh');
+  if(enOk&&zhOk){$('brandSt').innerHTML='<span class="ok">已包含公司名 ✓</span>';$('brandBtn').style.display='none'}
+  else{$('brandSt').textContent='页头目前还没有公司全名。';$('brandBtn').style.display='inline-block'}
+}
+$('brandBtn').onclick=function(){addBrand('en');addBrand('zh');refreshBrand()};
+
+// ---------- list: edit / reorder / delete ----------
+function refresh(){
+  var en=items('en');
+  $('listBox').style.display=$('addBox').style.display=$('saveBox').style.display=docs.en?'block':'none';
+  $('dZhBtn').style.display=docs.zh?'inline-block':'none';
+  refreshBrand();
+  var L=$('list');L.innerHTML='';
+  en.forEach(function(it,i){
+    var r=document.createElement('div');r.className='row';
+    var top=document.createElement('div');top.className='row-top';
+    top.innerHTML='<img alt=""><div class="n"></div>';
+    top.querySelector('img').src=it.querySelector('img').getAttribute('src');
+    top.querySelector('.n').innerHTML='<span></span><small></small>';
+    top.querySelector('span').textContent=it.querySelector('h3').textContent;
+    top.querySelector('small').textContent=it.querySelector('p').textContent;
+    var btns=document.createElement('div');btns.className='btns';
+    [['编辑',0],['↑',-1],['↓',1],['删除',2]].forEach(function(b){
+      var x=document.createElement('button');x.className='s'+(b[1]===2?' d':'');x.textContent=b[0];
+      x.onclick=function(){act(i,b[1])};btns.appendChild(x)});
+    top.appendChild(btns);r.appendChild(top);
+    var ed=document.createElement('div');ed.className='edit';ed.id='edit'+i;
+    r.appendChild(ed);
+    L.appendChild(r);
+  });
+}
+function act(i,d){
+  if(d===0){toggleEdit(i);return}
+  ['en','zh'].forEach(function(k){
+    var a=items(k);if(!a[i])return;var it=a[i],p=it.parentNode;
+    if(d===2){p.removeChild(it)}
+    else if(d===-1&&a[i-1]){p.insertBefore(it,a[i-1])}
+    else if(d===1&&a[i+1]){p.insertBefore(a[i+1],it)}
+  });refresh();
+}
+function toggleEdit(i){
+  var box=$('edit'+i);
+  if(box.classList.contains('open')){box.classList.remove('open');box.innerHTML='';return}
+  [].slice.call(document.querySelectorAll('.edit.open')).forEach(function(e){e.classList.remove('open');e.innerHTML=''});
+  var enIt=items('en')[i],zhIt=docs.zh?items('zh')[i]:null;
+  var curImg=enIt.querySelector('img').getAttribute('src');
+  box.innerHTML=
+    '<label>换图片（不选就保持原图）</label><input type="file" accept="image/*" class="eimg">'+
+    '<img class="eprev" alt="">'+
+    '<label>英文名称</label><input type="text" class="eNameEn">'+
+    '<label>英文说明</label><input type="text" class="eDescEn">'+
+    (zhIt?('<label>中文名称</label><input type="text" class="eNameZh"><label>中文说明</label><input type="text" class="eDescZh">'):'')+
+    '<p style="margin-top:10px"><button class="esave">保存修改</button> <button class="s ecancel" type="button">取消</button></p>'+
+    '<p class="est"></p>';
+  box.querySelector('.eNameEn').value=enIt.querySelector('h3').textContent;
+  box.querySelector('.eDescEn').value=enIt.querySelector('p').textContent;
+  if(zhIt){
+    box.querySelector('.eNameZh').value=zhIt.querySelector('h3').textContent;
+    box.querySelector('.eDescZh').value=zhIt.querySelector('p').textContent;
+  }
+  var newImg=null;
+  box.querySelector('.eimg').onchange=function(){
+    var f=this.files[0];if(!f)return;
+    readImageFile(f).then(function(data){
+      newImg=data;var pv=box.querySelector('.eprev');pv.src=data;pv.style.display='block';
+    });
+  };
+  box.querySelector('.ecancel').onclick=function(){box.classList.remove('open');box.innerHTML=''};
+  box.querySelector('.esave').onclick=function(){
+    var nEn=box.querySelector('.eNameEn').value.trim();
+    if(!nEn){box.querySelector('.est').innerHTML='<span class="warn">英文名称不能为空。</span>';return}
+    var dEn=box.querySelector('.eDescEn').value.trim();
+    enIt.querySelector('h3').textContent=nEn;enIt.querySelector('p').textContent=dEn;
+    var img1=enIt.querySelector('img');img1.setAttribute('alt',nEn);if(newImg)img1.setAttribute('src',newImg);
+    if(zhIt){
+      var nZh=box.querySelector('.eNameZh').value.trim()||nEn;
+      var dZh=box.querySelector('.eDescZh').value.trim()||dEn;
+      zhIt.querySelector('h3').textContent=nZh;zhIt.querySelector('p').textContent=dZh;
+      var img2=zhIt.querySelector('img');img2.setAttribute('alt',nZh);if(newImg)img2.setAttribute('src',newImg);
+    }
+    box.classList.remove('open');box.innerHTML='';refresh();
+  };
+  box.classList.add('open');
+}
+
+// ---------- load from file ----------
+function parseInto(text,key,name){
+  var d=new DOMParser().parseFromString(text,'text/html');
+  if(!d.querySelector('.pcar-scroller'))throw new Error('文件里没有找到滑动展示区，请用最新版页面。');
+  docs[key]=d;names[key]=name;
+}
+function setSt(id,msg,cls){var e=$(id);e.className=cls||'';e.textContent=msg}
+$('fEn').onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{parseInto(r.result,'en',f.name);setSt('st1','','');refresh()}catch(e){setSt('st1',e.message,'warn')}
+  };r.readAsText(f);
+};
+$('fZh').onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{parseInto(r.result,'zh',f.name);refresh()}catch(e){setSt('st1',e.message,'warn')}
+  };r.readAsText(f);
+};
+$('loadSite').onclick=async function(){
+  try{
+    setSt('st1','载入中…','ok');
+    var t=Date.now();
+    var a=await fetch('products.html?t='+t);if(!a.ok)throw new Error('找不到 products.html。请把本工具放在和网页同一个文件夹里，并在网站上打开它。');
+    parseInto(await a.text(),'en','products.html');
+    try{var z=await fetch('products-zh.html?t='+t);if(z.ok)parseInto(await z.text(),'zh','products-zh.html')}catch(e){}
+    setSt('st1','已载入。','ok');refresh();
+  }catch(e){setSt('st1',e.message,'warn')}
+};
+
+// ---------- add new product ----------
+var cur=null;
+$('img').onchange=function(){
+  var f=this.files[0];if(!f)return;
+  readImageFile(f).then(function(data){cur=data;$('prev').src=data;$('prev').style.display='block'});
+};
+function mk(d,n,t,src){
+  var it=d.createElement('div');it.className='pcar-item';
+  it.innerHTML='<div class="pic"><img draggable="false"></div><div class="cap"><h3></h3><p></p></div>';
+  var g=it.querySelector('img');g.setAttribute('src',src);g.setAttribute('alt',n);
+  it.querySelector('h3').textContent=n;it.querySelector('p').textContent=t;return it;
+}
+$('add').onclick=function(){
+  if(!cur){$('st3').innerHTML='<span class="warn">请先选择产品图片。</span>';return}
+  var nEn=$('nEn').value.trim();if(!nEn){$('st3').innerHTML='<span class="warn">请填写英文名称。</span>';return}
+  docs.en.querySelector('.pcar-scroller').appendChild(mk(docs.en,nEn,$('dEn').value.trim(),cur));
+  if(docs.zh)docs.zh.querySelector('.pcar-scroller').appendChild(mk(docs.zh,$('nZh').value.trim()||nEn,$('dZh').value.trim()||$('dEn').value.trim(),cur));
+  cur=null;$('img').value='';$('prev').style.display='none';['nEn','dEn','nZh','dZh'].forEach(function(i){$(i).value=''});
+  $('st3').innerHTML='<span class="ok">已添加。继续添加，或到 ⑤ 保存。</span>';refresh();
+};
+
+// ---------- save as file ----------
+function save(k){
+  var html='<!DOCTYPE html>\n'+docs[k].documentElement.outerHTML;
+  var f=new File([html],names[k],{type:'text/html'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(function(){dl(f)})}else dl(f);
+}
+function dl(f){var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},500)}
+$('dEnBtn').onclick=function(){save('en')};$('dZhBtn').onclick=function(){save('zh')};
+
+// ---------- GitHub ----------
+var G={};
+function gload(){try{G=JSON.parse(localStorage.getItem('aeeGh')||'{}')}catch(e){G={}}
+  $('gOwner').value=G.owner||'';$('gRepo').value=G.repo||'';$('gBranch').value=G.branch||'main';$('gDir').value=G.dir||'';$('gTok').value=G.tok||'';
+  gshow()}
+function gshow(){var ok=G.owner&&G.repo&&G.tok;$('ghBtn').style.display=ok?'inline-block':'none';$('loadGh').style.display=ok?'inline-block':'none';if(!ok)$('ghset').open=true}
+$('gSave').onclick=function(){
+  G={owner:$('gOwner').value.trim(),repo:$('gRepo').value.trim(),branch:$('gBranch').value.trim()||'main',dir:$('gDir').value.trim().replace(/^\/+|\/+$/g,''),tok:$('gTok').value.trim()};
+  try{localStorage.setItem('aeeGh',JSON.stringify(G))}catch(e){}
+  $('gSt').textContent='已保存';gshow()};
+function gpath(n){return (G.dir?G.dir+'/':'')+n}
+function gurl(n){return 'https://api.github.com/repos/'+encodeURIComponent(G.owner)+'/'+encodeURIComponent(G.repo)+'/contents/'+gpath(n).split('/').map(encodeURIComponent).join('/')}
+function gh(extra){return Object.assign({'Authorization':'Bearer '+G.tok,'X-GitHub-Api-Version':'2022-11-28'},extra||{})}
+$('loadGh').onclick=async function(){
+  try{
+    setSt('st1','从 GitHub 载入中…','ok');
+    var a=await fetch(gurl('products.html')+'?ref='+encodeURIComponent(G.branch),{headers:gh({'Accept':'application/vnd.github.raw+json'}),cache:'no-store'});
+    if(!a.ok)throw new Error('读取失败（'+a.status+'）。请检查用户名、仓库名、文件夹和 Token 权限。');
+    parseInto(await a.text(),'en','products.html');
+    var z=await fetch(gurl('products-zh.html')+'?ref='+encodeURIComponent(G.branch),{headers:gh({'Accept':'application/vnd.github.raw+json'}),cache:'no-store'});
+    if(z.ok)parseInto(await z.text(),'zh','products-zh.html');
+    setSt('st1','已从 GitHub 载入最新版。','ok');refresh();
+  }catch(e){setSt('st1',e.message,'warn')}
+};
+function b64(str){var u=new TextEncoder().encode(str),o='';for(var i=0;i<u.length;i+=0x8000)o+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(o)}
+async function put(key){
+  var n=names[key],u=gurl(n),
+  r=await fetch(u+'?ref='+encodeURIComponent(G.branch),{headers:gh(),cache:'no-store'});
+  if(!r.ok)throw new Error(n+' 读取失败（'+r.status+'）');
+  var sha=(await r.json()).sha;
+  var body={message:'Update products carousel ('+n+')',content:b64('<!DOCTYPE html>\n'+docs[key].documentElement.outerHTML),sha:sha,branch:G.branch};
+  var w=await fetch(u,{method:'PUT',headers:gh({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+  if(!w.ok)throw new Error(n+' 提交失败（'+w.status+'）。请检查 Token 是否有 Contents 读写权限。');
+}
+$('ghBtn').onclick=async function(){
+  var b=this;b.disabled=true;setSt('st4','提交中，请稍等…','ok');
+  try{await put('en');if(docs.zh)await put('zh');setSt('st4','已提交到 GitHub。网站一般 1–2 分钟后更新。','ok')}
+  catch(e){setSt('st4',e.message,'warn')}
+  b.disabled=false;
+};
+gload();
+</script></body></html>
